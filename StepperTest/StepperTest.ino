@@ -8,11 +8,11 @@
 */
 
 //Define EasyDriver pins
-#define stp 2    // stp pin connected to D2
-#define dir 3    // dir pin connected to GND (forwards)
-#define MS1 4    // MS1 & MS2 connected to 5V (1/8th step resoluion)
-#define MS2 5
-#define EN  6    // EN connected to D6
+#define stp 8    // stp pin connected to D2
+#define dir 9    // dir pin connected to GND (forwards)
+// #define MS1   MS1 & MS2 connected to 5V (1/8th step resoluion)
+// #define MS2
+#define EN  10    // EN connected to D6
 
 // Define directions
 #define REVERSE HIGH // Move in reverse4
@@ -24,41 +24,27 @@ const int POSITIONS = 5;
 const int ONE_POSITION = 200 / POSITIONS * 8;
 
 // Stores position from Origin of each index (Origin is always zero)
-int indexArray[] = {0,4,3,2,1};
-
-String inString = "";    // string to hold input
+int indexArray[] = {0, 4, 3, 2, 1};
 
 void setup() {
   pinMode(stp, OUTPUT);
   pinMode(dir, OUTPUT);
   pinMode(EN, OUTPUT);
+  digitalWrite(EN, HIGH); // Disable motor
+  delay(5000);
   Serial.begin(9600);
   Serial.println("Begin test");
 }
 
 void loop() {
-  int position = 0;
-  digitalWrite(EN, HIGH);
-  // Read serial input:
-  while (Serial.available() > 0) {
-    int inChar = Serial.read();
-
-    if (isDigit(inChar)) {
-      // convert the incoming byte to a char and add it to the string:
-      inString += (char)inChar;
-    }
-    // if you get a newline, print the string, then the string's value:
-    if (inChar == '\n') {
-      position = inString.toInt();
-      Serial.println(position);
-      showIndex();
-      setPosition(position);
-      showIndex();
-      // clear the string for new input:
-      inString = "";
-    }
-    delay(100);
-  }
+  digitalWrite(EN, HIGH); // Disable motor    
+  int position = random(0, 5); // Generate random position
+  Serial.println(position);
+  showIndex();
+  setPosition(position);
+  digitalWrite(EN, HIGH); // Disable motor  
+  showIndex();
+  delay(2000);
 }
 
 // Move any valid index to Origin
@@ -66,12 +52,10 @@ void setPosition(int index) {
   int direction;
   // Sanity check index
   if ((index >= 0) && (index < POSITIONS)) {
-    
+
     int p = indexArray[index]; // Get number of positions from Origin
 
-    if ( !p ) return;    // Check if already at Origin    
-    Serial.print("mod ");
-    Serial.println(POSITIONS % 3);
+    if ( !p ) return;    // Check if already at Origin
 
     // Work out best direction
     if ( p > ( POSITIONS % 3 )) {
@@ -101,7 +85,7 @@ void move(int positions, int direction) {
     digitalWrite(stp, LOW); // Pull step pin low so it can be triggered again
     delay(1);
   }
-  
+
   for (int j = 0; j < positions; j++)   // Update index after each position
     updateIndex(direction);
 }
