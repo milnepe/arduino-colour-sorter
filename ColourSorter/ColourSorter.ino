@@ -51,6 +51,8 @@ int indexArray[] = {0, 4, 3, 2, 1};
 Servo myservo;  // create servo object to control a servo
 int pos = 0;    // variable to store the servo position
 
+uint16_t R, G, B, C; //RGB values
+
 void setup() {
   pinMode(stp, OUTPUT);
   pinMode(dir, OUTPUT);
@@ -72,16 +74,17 @@ void setup() {
 }
 
 void loop() {
+
   digitalWrite(EN, HIGH); // Disable motor 
   uint16_t colour_temp = 0;
   int colour_index;   
   //int position = random(0, 5); // Generate random position
-  showIndex();
+  //showIndex();
 
   moveToSensor();
   delay(dwell_time);
 
-  colour_temp = getColourTemperature();
+  /*colour_temp = getColourTemperature();
   while ((colour_index = getIndex(colour_temp)) < 0){
     delay(5);
     colour_temp = getColourTemperature();
@@ -93,9 +96,14 @@ void loop() {
     Serial.print(colour_temp);
     Serial.println();
   }
+ 
   setPosition(colour_index);
+  */
+
+  setPosition(getIndex());
+  
   digitalWrite(EN, HIGH); // Disable motor  
-  showIndex();
+  //showIndex();
   delay(dwell_time);  
 
   moveToEjector();
@@ -106,19 +114,23 @@ void loop() {
   
 }
 
-int getIndex(uint16_t colour){
+int getIndex(){
   int index = 0;
-  if(colour >= 0 && colour <= 3870)
-    return index = 0; //Orange;
-  if(colour >= 3892 && colour <= 4150)
-    return index = 1; //Yellow;
-  if(colour >= 4832 && colour <= 5027)
-    return index = 2; //Red; 
-  if(colour >= 5086 && colour <= 5339)
-    return index = 3; //Green;
-  if(colour >= 6019)
-    return index = 4; //Purple;
-  return -1;
+  getRGB();
+   //Orange;
+  if((R >= 4157 && R <= 4966) && (G >= 3966 && G <= 4356) && (B >= 3464 && B <= 3865)){
+    Serial.println("Orange");
+    return index = 0;
+  }
+  // Fail
+  Serial.println("Fail");
+  return 1;
+}
+
+void getRGB() {
+  tcs.getRawData(&R, &G, &B, &C);
+  Serial.print(R); Serial.print(" "); Serial.print(G); Serial.print(" ");Serial.print(B);
+  Serial.println();
 }
 
 uint16_t getColourTemperature() {
